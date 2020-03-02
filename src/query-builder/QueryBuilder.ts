@@ -19,6 +19,7 @@ import {OracleDriver} from "../driver/oracle/OracleDriver";
 import {EntitySchema} from "../";
 import {FindOperator} from "../find-options/FindOperator";
 import {In} from "../find-options/operator/In";
+import {EntityColumnNotFound} from "../error/EntityColumnNotFound";
 
 // todo: completely cover query builder with tests
 // todo: entityOrProperty can be target name. implement proper behaviour if it is.
@@ -748,6 +749,11 @@ export abstract class QueryBuilder<Entity> {
 
                     return propertyPaths.map((propertyPath, propertyIndex) => {
                         const columns = this.expressionMap.mainAlias!.metadata.findColumnsWithPropertyPath(propertyPath);
+
+                        if (!columns.length) {
+                            throw new EntityColumnNotFound(propertyPath);
+                        }
+
                         return columns.map((column, columnIndex) => {
 
                             const aliasPath = this.expressionMap.aliasNamePrefixingEnabled ? `${this.alias}.${propertyPath}` : column.propertyPath;
